@@ -1,10 +1,16 @@
-# pdpLCA_GT
+# dpLCA_GT
 
 This repo supplements the dynamic and prospective Life Cycle Assessment study: "Ttile / DOI" 
 
+### Folders have been re-structured as: 
+- dpLCIA folders include FaIR metrics running, then preparing LCIA methods for brightway2 projects (yellow boxes below)
+- GT_case folder include all data and notebooks for the garbage truck case study (gray boxes below)
 
 How to navigate this repo: 
 ![flowchart](image/image.png)
+
+
+notebooks using absolute file path now, need to cleanup. 
 
 
 ### NOTE:
