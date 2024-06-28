@@ -1,6 +1,7 @@
 import os 
 import numpy as np
 import pandas as pd 
+from datetime import datetime
 
 class majorghg_analysis:
     """ once fair is run and output parameters ready through module A, this module B runs following functions:
@@ -298,7 +299,6 @@ class majorghg_analysis:
     """
     
     def get_dcf_finaloutput (self, whichgas, rf, agwp, gwp):
-
         """
         once final metrics calculated, save all output to excel
         When tstep == 1, final_agwp == agwp
@@ -363,13 +363,15 @@ class majorghg_analysis:
         final_gwp_single = np.median(final_gwp, axis=1)
         
         # write metrics to excel
-        if not os.path.exists('output/metrics'):
-            os.makedirs('output/metrics')
-            
+        dat = datetime.now().strftime('%Y-%m-%d')
+        folder_name = f"{'output/metrics'}_{dat}"
+        if not os.path.exists(folder_name):
+            os.makedirs(folder_name)
+        
         sheet_y =  str(self.fair_start_y + self.year_index)
         excel_file_name = "agwp_dcf_gwp" + str(self.H_max) + "_tstep" + str(self.ts_per_year) +  whichgas + "_" + self.scn + "_fair_start" + str(self.fair_start_y) + "MY" + sheet_y + '.xlsx' 
-        output_folder = 'output/metrics'   
-        excel_file_path = os.path.join(output_folder, excel_file_name)
+        #output_folder = 'output/metrics'   
+        excel_file_path = os.path.join(folder_name, excel_file_name)
 
         with pd.ExcelWriter(excel_file_path, engine='xlsxwriter') as writer:
             pd.DataFrame(final_agwp).to_excel(writer, sheet_name='agwp_wh_ensmb_' + whichgas  + sheet_y, index=True)
