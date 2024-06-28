@@ -222,4 +222,29 @@ class majorghg_get_f:
         n2o_erf_diff = erf2 - erf1
         return n2o_erf_diff
 
-        
+    
+    # Step A.4-A prepare alpha_lifetime seperately for further analysis/plotting  
+    def get_ch4_n2o_alpha (self): 
+        """
+        Inputs: 
+        -------
+        prepared in the output :  self.ch4_f | self.n2o_f   
+        Returns: 
+        -------
+        lifetime for CH4 and N2O
+        """
+        ch4_alpha , n2o_alpha = self.ch4_f['CH4_lifetime'], self.n2o_f['N2O_lifetime']
+        return  ch4_alpha, n2o_alpha
+    
+    # Step A.4-B prepare gas_concentration seperately for further analysis/plotting  
+    def get_majorghg_concentration (self): 
+        """
+        Inputs: 
+        -------
+        prepared in the output :  self.co2_f | self.ch4_f | self.n2o_f   
+        Returns: 
+        -------
+        gas_concentration for SSP[x]/MY[t]
+        """
+        co2_c, ch4_c, n20_c =  self.co2_f['CO2_C'] ,  self.ch4_f['CH4_C'],  self.n2o_f['N2O_C'] 
+        return  co2_c, ch4_c, n20_c
