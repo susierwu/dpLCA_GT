@@ -1,0 +1,12 @@
+# OS/System files
+.DS_Store
+Thumbs.db
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# Data files (large or intermediate)
+*.pkl
+*.pickle
+
