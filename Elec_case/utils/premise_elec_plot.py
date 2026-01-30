@@ -1,5 +1,6 @@
 import pandas as pd
 import matplotlib.pyplot as plt
+import os 
 
 def extract_region_block_general(path, region="CAN", sheet="Electricity - generation"):
     df = pd.read_excel(path, sheet_name=sheet, header=None)
@@ -45,7 +46,7 @@ def aggregate_groups_all_solar(df):
         "Coal (all)":    "coal",
         "Gas (all)":     "gas",
         "Oil (all)":     "oil",
-        "Solar (all)":   "solar",
+        "Solar (all)":   "solar", # old one combining all solars
         "Wind (all)":    "wind",
     }
     drops=[]
@@ -83,13 +84,13 @@ def aggregate_groups(df):
     # ----- SPECIAL SOLAR HANDLING -----
     # Solar CSP separate
     csp_cols = [c for c in out.columns if "Solar CSP" == c]
-    # Identify Solar PV technologies (Centralized & Residential)
+    # Identify Solar PV technologies (commercial&residential)
     pv_cols = [c for c in out.columns 
                if isinstance(c, str) and c.lower().startswith("solar pv")]
                #if c in ["Solar PV Centralized", "Solar PV Residential"]]
 
     if pv_cols:
-        out["Solar PV (all)"] = out[pv_cols].sum(axis=1)
+        out["Solar PV"] = out[pv_cols].sum(axis=1) 
         drops += pv_cols
     # DO NOT drop Solar CSP, Only drop solar-PV components
     out = out.drop(columns=drops)
@@ -104,34 +105,8 @@ def aggregate_groups(df):
 
 
 
-"""
-def plot_region_mix_old(region, scenario_paths, mode="EJ", up_to_year = 2050, palette="Set3"):
-    cmap = plt.cm.get_cmap(palette).colors
-    fig, axes = plt.subplots(1, len(scenario_paths), figsize=(22, 8), sharey=True)
-    legend=None
-    for ax,(ssp,path) in zip(axes, scenario_paths.items()):
-        df = aggregate_groups(extract_region_block_general(path, region))
-        df = df[df.index <= up_to_year]
-        if mode=="percent":
-            df = df.div(df.sum(axis=1), axis=0)*100
-        techs=list(df.columns)
-        x=df.index.values
-        y=df[techs].T.values
-        ax.stackplot(x,y,colors=cmap[:len(techs)],alpha=0.9)
-        ax.set_title(f"{region} – {ssp}")
-        ax.set_xlim(2005,up_to_year)
-        ax.grid(alpha=0.3)
-        legend=techs
-    axes[0].set_ylabel("EJ" if mode=="EJ" else "Share (%)")
-    fig.legend(legend,bbox_to_anchor=(1.14,0.5),loc="center right",title="Technologies")
-    plt.suptitle(f"{region}: electricity mix ({mode}) – up to {up_to_year}",fontsize=18)
-    plt.tight_layout()
-    plt.show()
-"""
 
-
-
-def plot_region_mix(region, scenario_paths, mode="EJ", up_to_year=2050, palette="Set3"):
+def plot_region_mix(region, scenario_paths, iam_scnname = "IMAGE", mode="EJ", up_to_year=2050, palette="Set3", output=False, outdir="plot_outputs"):
     cmap = plt.cm.get_cmap(palette).colors
     fig, axes = plt.subplots(1, len(scenario_paths), figsize=(22, 8), sharey=True)
     legend = None
@@ -175,6 +150,15 @@ def plot_region_mix(region, scenario_paths, mode="EJ", up_to_year=2050, palette=
 
     axes[0].set_ylabel("EJ" if mode == "EJ" else "Share (%)")
     fig.legend(legend, bbox_to_anchor=(1.14, 0.5), loc="center right", title="technology", fontsize = 14)
-    plt.suptitle(f"{region}: electricity mix ({mode}) – up to {up_to_year}", fontsize=18)
+    plt.suptitle(f"{region}: electricity mix ({mode}) – up to {up_to_year} \n (electricity generation under {iam_scnname})", fontsize=18)
     plt.tight_layout()
+    
+    if output:
+        os.makedirs(outdir, exist_ok=True)
+        
+        fname = f"electricity_mix_{region}_{mode}_to_{up_to_year}.png"
+        fpath = os.path.join(outdir, fname)
+        plt.savefig(fpath, dpi=300, bbox_inches="tight")
+        print(f"Saved figure to: {fpath}")
+    
     plt.show()

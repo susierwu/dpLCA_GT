@@ -1,0 +1,3 @@
+static (p)GWP20 hydro results under `staticLCI_(p)GWP20` only with updated CO2/CH4 with Annie's study 
+
+static (p)GWP100 hydro results under `staticLCI_(p)GWP100`  has two results per ei or per Annie 

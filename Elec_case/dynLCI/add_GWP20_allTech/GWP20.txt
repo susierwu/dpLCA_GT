@@ -1,0 +1,3 @@
+since using GWP100 doesn't give us "tech" rank shifting as expected, we use GWP20 here to do another anlysis
+
+## note that hydro now only has the updated CO2/CH4 version per Annie, caz we overwrite the BGDB directly for all different versions of premise inventory tested, so only the updated hydro is available for analysis 

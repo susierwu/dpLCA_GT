@@ -171,7 +171,7 @@ def build_dynamic_electricity_all(
         • return results[(loc, pw, yr)] = (fg_act, exchange)
     """
 
-    print("pathways should match the premise database names, e.g., SSP1-VLLO, SSP2-M, SSP5-H \n also IAM locations for premise database can be found through calling: \n from premise import geomap -> premise.geomap.Geomap('image').iam_regions " )
+    #print("pathways should match the premise database names, e.g., SSP1-VLLO, SSP2-M, SSP5-H \n also IAM locations for premise database can be found through calling: \n from premise import geomap -> premise.geomap.Geomap('image').iam_regions " )
         
     # ---- Create or reuse foreground DB ----
     if flush_fg_db:

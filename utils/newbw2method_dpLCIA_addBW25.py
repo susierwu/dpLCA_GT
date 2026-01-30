@@ -16,7 +16,7 @@ class assign_dpIRF:
         ssp = '119',
         fairMY = 2030, 
         metric = 'IRF',
-        TH = 101, #101 if GWP100, 501 if GWP500
+        TH = 101, #101 if GWP100,   21 if GWP20 
         majorGHG_names = ['Carbon dioxide, non-fossil', 'Carbon dioxide, in air', 'Carbon dioxide, to soil or biomass stock', 
              'Carbon dioxide, from soil or biomass stock', 'Carbon dioxide, fossil', 'Carbon dioxide, non-fossil, resource correction', 
              'Methane, from soil or biomass stock', 'Methane, fossil', 'Methane, non-fossil' , 
@@ -157,7 +157,7 @@ class assign_dpGWP:
         ssp = '119',
         fairMY = 2030, 
         metric = 'GWP', 
-        TH = 101, #101 if GWP100, 501 if GWP500
+        TH = 101, #101 if GWP100, 501 if GWP500, 21 if GWP20 
         GWP100_only = True, # this first version, we don't have any dpLCIA for minorGHGs, so only using premise_gwp100 values
         majorGHG_names = ['Carbon dioxide, non-fossil', 'Carbon dioxide, in air', 'Carbon dioxide, to soil or biomass stock', 
              'Carbon dioxide, from soil or biomass stock', 'Carbon dioxide, fossil', 'Carbon dioxide, non-fossil, resource correction', 
@@ -226,7 +226,7 @@ class assign_dpGWP:
         prem_gwp_df = self.premise_gwp100_inputdf
         if self.GWP100_only == True:
             for ind in C.index: 
-                if ind == "GWP100":
+                if ind == "GWP100" or ind == "GWP20":  # adding in  ind == "GWP20"  for prepare GWP20 for minor gas
                     for gas in C.columns: 
                         if gas in minorGHG_namesuniq:
                             gwp100_gas = prem_gwp_df[prem_gwp_df["name"] == gas]['amount'].values
@@ -291,7 +291,7 @@ class assign_dpGWP:
             print("dpLCIA for minor GHGs are to be prepared")
         else: 
             for ind in C.index: # to loop through all years  
-                if ind == 'GWP100': 
+                if ind == 'GWP100' or ind == "GWP20":  # adding in  ind == "GWP20"  for prepare GWP20 for minor gas
                     cf_t = []
                     for stressor in C.columns:
                         all_efs = [i for i in mybio if i['name'] == stressor]
@@ -305,16 +305,39 @@ class assign_dpGWP:
                     data.append(cf_t)
         return data
 
-    def prep_final_dCC_bw2method (self, data, gwp_method = None):
+    def prep_final_dCC_bw2method (self, C,  data, gwp_method = None):
+        """ 
+        only data is needed for the bw2method, C is added to control the length of the GWP100 or 20
+        """ 
         ssp, MY = str('SSP' + self.ssp) , str('MY' + str(self.fairMY))   
-        m_name = 'IPCC 2021 - ' + ssp + '-' + MY 
-        print(f" start creating new method, with name: {m_name}")
+        #m_name = 'IPCC 2021 - ' + ssp + '-' + MY   # this was the old name do not use it 
+        print(f"start creating new method, under: {ssp}, {MY} ")
         for i in range( 0, len(data) ):  # pGWP only has one if self.GWP100_only == True, prepare for pGWP100
-            if self.GWP100_only != True:
+            if not self.GWP100_only:        
+                m_name = 'IPCC 2021 - ' + ssp + '-' + MY 
                 name = (m_name + ' - year' + str(i) , 'climate change', 'dpGWP' + " " + gwp_method + str(i) )
-            elif self.GWP100_only == True:
-                m_name = 'Climate Change' + ' prospective GWP100' 
-                name = (m_name, ssp, MY, 'pGWP100 ' + gwp_method ) 
+            else: # self.GWP100_only == True
+                n_years = len(C["Methane, fossil"])
+                if n_years == 100:
+                    m_name = "Climate Change prospective GWP100"
+                    name = (m_name, ssp, MY, 'pGWP100 ' + gwp_method ) 
+                elif n_years == 20:
+                    print("We'll write GWP20 values")
+                    m_name = "Climate Change prospective GWP20"
+                    name = (m_name, ssp, MY, 'pGWP20 ' + gwp_method ) 
+                else:
+                    raise ValueError(f"Unexpected number of years, only supported GWP20 or GWP100: {n_years}")
+            
+            # caz now we adding GWP20 option, adding in a check only of the data len is 100, then write GWP100, 
+            #elif self.GWP100_only == True and len(C["Methane, fossil"]) == 100:
+            #    m_name = 'Climate Change' + ' prospective GWP100' 
+            #    name = (m_name, ssp, MY, 'pGWP100 ' + gwp_method ) 
+            # still reply on the same self.GWP100_only, but adding the filtering by len(C), to write the right name for GWP20
+            #elif self.GWP100_only == True and len(C["Methane, fossil"]) == 20:
+            #    print("we'll write GWP20 values")
+            #    m_name = 'Climate Change' + ' prospective GWP20' 
+            #    name = (m_name, ssp, MY, 'pGWP20 ' + gwp_method ) 
+                
             new_method = bw2data.Method(name)
             new_method.register()
             new_method.metadata["unit"] = 'kg CO2-Eq'
