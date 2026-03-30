@@ -1,0 +1,69 @@
+
+3.X From prospective forcing and decay to final pGWP20 and pGWP100
+
+To understand the final prospective GWP patterns, the results must be interpreted as a sequence linking physical drivers to metric construction. Figures 1–4 therefore form a connected chain. Figure 1 shows how the prospective background state modifies gas-specific marginal forcing; Figure 2 shows how it modifies pulse decay; Figure 3 shows how these two components combine in the absolute metric, pAGWP; and Figure 4 shows how the final relative metrics, pGWP20 and pGWP100, emerge after normalization by CO2.
+
+
+
+3.X.1 Prospective marginal forcing: the forcing-side driver
+
+Figure 1 shows that the prospective climate background alters the marginal forcing response of each gas. In the present framework, this appears through the concentration-dependent prospective forcing term (pRE), or equivalently the marginal forcing contribution used in the pAGWP calculation.
+
+This step is physically important because pAGWP is not determined by decay alone; it also depends on how much instantaneous forcing is generated per unit pulse under a given future background state. The forcing-side effect is gas-specific.
+
+For CO2, the prospective formulation generally produces a larger cumulative forcing response than the benchmark analytical treatment, particularly at longer horizons and under higher-forcing scenario–year combinations. For CH4 and N2O, the forcing-side adjustment is also present, but its relative importance differs compared to the decay term.
+
+Figure 1 therefore establishes that the prospective framework is not simply a reparameterization of the conventional benchmark. The forcing efficiency itself becomes conditional on scenario and model year. A key implication is that the absolute metric is already reshaped before normalization. Consequently, differences observed later in pGWP originate from changes in the physical forcing kernel, not only from the ratio structure of the metric.
+
+
+3.X.2 Prospective decay: the decay-side driver
+
+Figure 2 introduces the second physical component: prospective pulse decay, represented by the FaIR-derived pIRF. This term governs how long an emitted pulse remains climatically active. Together with marginal forcing, it determines the full time profile of radiative forcing and thus the integrated pAGWP.
+
+The decay effect varies strongly across gases. CO2 exhibits a slow, multi-timescale adjustment, so even modest changes in decay representation can significantly affect long-term cumulative forcing. CH4, as a short-lived climate forcer, decays rapidly, and its forcing impact is concentrated in the first decades after emission. N2O occupies an intermediate-to-long-lived position: it decays more slowly than CH4, yet its prospective decay differs sufficiently from the benchmark to materially alter integrated forcing over both 20- and 100-year horizons.
+
+This figure isolates the temporal dimension of the result. If Figure 1 answers how much forcing is exerted per unit pulse, Figure 2 answers for how long that forcing persists. The final pGWP outcome depends on both.
+
+3.X.3 pAGWP as the bridge between physical processes and the final metric
+
+Figure 3 combines the forcing-side and decay-side components into gas-specific pAGWP trajectories. This represents the bridge between physical processes and the final relative metric.
+
+The pAGWP comparison reveals distinct directions of change. For CO2, the prospective cumulative forcing is generally higher than the benchmark, especially at longer horizons. For CH4, pAGWP is also higher, with differences emerging early due to its front-loaded forcing profile. In contrast, N2O shows systematically lower pAGWP values under the prospective framework.
+
+Thus, before any normalization, the absolute metric already shifts in three directions: upward for CO2, upward for CH4, and downward for N2O. This is essential for interpreting Figure 4, because the final pGWP patterns are anchored in these absolute changes and are not artifacts of normalization alone.
+
+
+
+3.X.4 Final pGWP20 and pGWP100: combined effects of physics, horizon, and metric structure
+
+Figure 4 presents the final pGWP values after normalization by CO2. The diagonal line indicates equality between the fixed-CO2 and dynamic (dp-CO2) approaches, while the IPCC reference is shown separately.
+
+Read together with Figures 1–3, the results can be interpreted from four complementary perspectives.
+
+First, the physical origin. The prospective metric differs from the benchmark because both marginal forcing and decay are updated. For CO2, both prospective approaches cluster near unity at GWP20, but diverge substantially at GWP100, especially under high-forcing scenarios, indicating that differences accumulate over time. For CH4, values exceed the IPCC reference at both horizons, particularly at 20 years, reflecting its short-lived forcing profile and sensitivity to early-time dynamics. For N2O, values fall well below the IPCC reference at both horizons, indicating a reduced cumulative forcing response under the prospective framework.
+
+Second, the interaction between gas lifetime and time horizon. The contrast between GWP20 and GWP100 reflects how different parts of the pulse-response trajectory are sampled. CH4’s short lifetime makes GWP20 highly sensitive to early-time forcing, explaining its strong elevation. CO2 shows limited divergence at 20 years but much larger differences at 100 years due to its long persistence. N2O exhibits intermediate behavior but still shows stronger divergence at longer horizons.
+
+Third, the ratio structure of the metric. By construction, pGWP depends on both the gas-specific pAGWP in the numerator and the CO2 pAGWP in the denominator. For CH4, the increase in the numerator dominates any change in the denominator, keeping values above the benchmark. For N2O, the decrease in the numerator is reinforced by normalization, leading to much lower values. For CO2, the denominator itself becomes dynamic and affects the scaling of all gases.
+
+Fourth, the difference between fixed-CO2 and dp-CO2 approaches. Under the fixed-CO2 approach, the denominator remains anchored to the conventional reference, so changes arise mainly from the numerator. Under the dp-CO2 approach, the denominator is also updated prospectively, making the metric internally consistent but also allowing shifts in the CO2 reference to offset or amplify changes. For CH4 and N2O, dp-CO2 generally moderates or amplifies the change depending on the denominator shift. For CO2, the difference is most evident at GWP100, where the dynamic approach reveals substantial variability across scenarios.
+
+
+
+3.X.5 Gas-by-gas interpretation of Figure 4
+
+For CO2, GWP20 remains close to unity under both approaches, indicating limited short-horizon sensitivity. At GWP100, the dp-CO2 approach shows a broader spread and higher values under some scenario–year combinations, demonstrating strong sensitivity to prospective treatment of the reference gas.
+
+For CH4, values are consistently elevated at both horizons, particularly at 20 years. This reflects its short-lived forcing profile and sensitivity to early-time dynamics. The dp-CO2 approach moderates the increase relative to fixed-CO2 but does not change the overall conclusion.
+
+For N2O, values are substantially lower than the benchmark at both horizons. This reflects a reduced cumulative forcing response under the prospective framework, further reinforced by normalization with CO2.
+
+
+
+3.X.6 Overall interpretation across Figures 1–4
+
+Taken together, Figures 1–4 show that pGWP values emerge from a structured causal chain rather than as isolated metric outputs. The prospective background alters marginal forcing, then pulse decay; these combine into pAGWP trajectories; and the final pGWP values result from normalization and metric design.
+
+This explains the contrasting behavior across gases. CH4 increases because the prospective framework strengthens its short-term cumulative forcing. N2O decreases because its cumulative forcing is reduced and this reduction is amplified by normalization. CO2 shows limited change at short horizons but increasing divergence at longer horizons, highlighting the importance of treating the reference gas prospectively.
+
+Across all gases, the prospective framework systematically alters the balance between forcing intensity, atmospheric persistence, and CO2-based normalization. The strongest effects occur where these factors reinforce each other: CH4 increases due to stronger short-term forcing; N2O decreases due to reduced cumulative forcing combined with normalization effects; and CO2 diverges primarily at longer horizons when its own prospective treatment becomes important. Overall, prospective GWP values are not fixed constants but depend on scenario, model year, time horizon, and metric formulation, reflecting the combined evolution of the forcing kernel, decay kernel, and reference metric.
