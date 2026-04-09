@@ -165,9 +165,11 @@ def _find_sheet(
     return candidates[0]
 
 
+
 def load_ghg_kernels(
     ghg_files: Dict[str, str],
     metric: Metric,
+    max_horizon: int = 100,   # keep only 0..100 by default
 ) -> Dict[str, Dict[str, np.ndarray]]:
     """
     Load central + ensemble kernels for each gas.
@@ -178,46 +180,80 @@ def load_ghg_kernels(
         Map from "CO2"/"CH4"/"N2O" to dynamic CF Excel files.
     metric : {"rf", "agwp", "gwp", "dcf"}
         Which family of worksheets to use.
-
-    Returns
-    -------
-    irfs : dict
-        {
-            "CO2": {"central": (101,), "ensemble": (101, n_ens)},
-            "CH4": {...},
-            "N2O": {...},
-        }
+    max_horizon : int
+        Maximum horizon to keep from Excel kernels.
+        max_horizon=100 means rows for index 0..100, i.e. 101 rows.
     """
     irfs: Dict[str, Dict[str, np.ndarray]] = {}
+    n_keep = max_horizon + 1
 
     for gas, path in ghg_files.items():
         xls = pd.ExcelFile(path)
-        #  the year is in the filename, starting MY
+
         fname = os.path.basename(path)
         m = re.search(r"MY(\d{4})", fname)
         if not m:
-            raise ValueError(f"Cannot infer model year from '{fname}'. Expected pattern '*MYXXXX*'")
+            raise ValueError(
+                f"Cannot infer model year from '{fname}'. Expected pattern '*MYXXXX*'"
+            )
         year = int(m.group(1))
 
+        # -------------------
         # Central
-        central_sheet = _find_sheet(xls, metric=metric, gas=gas, year=year, kind="central")
+        # -------------------
+        central_sheet = _find_sheet(
+            xls, metric=metric, gas=gas, year=year, kind="central"
+        )
         df_central = pd.read_excel(xls, sheet_name=central_sheet)
-        # Expect an index column + a single gas column
-        gas_col = [c for c in df_central.columns if gas in c or c == gas]
+
+        gas_col = [c for c in df_central.columns if gas in str(c) or str(c) == gas]
         if not gas_col:
             raise ValueError(f"No '{gas}' column in central sheet '{central_sheet}'")
-        central = df_central[gas_col[0]].to_numpy()  # shape (101,)
 
+        central = df_central[gas_col[0]].to_numpy()
+
+        # -------------------
         # Ensemble
-        ens_sheet = _find_sheet(xls, metric=metric, gas=gas, year=year, kind="ensemble")
+        # -------------------
+        ens_sheet = _find_sheet(
+            xls, metric=metric, gas=gas, year=year, kind="ensemble"
+        )
         df_ens = pd.read_excel(xls, sheet_name=ens_sheet)
-        # Drop index column
-        ens = df_ens.drop(columns=[df_ens.columns[0]]).to_numpy()  # (101, n_ens)
+        ens = df_ens.drop(columns=[df_ens.columns[0]]).to_numpy()
 
-        irfs[gas] = {"central": central, "ensemble": ens}
+        # -------------------
+        # Harmonize horizon
+        # -------------------
+        if len(central) < n_keep:
+            raise ValueError(
+                f"{gas} central kernel in '{os.path.basename(path)}' has only "
+                f"{len(central)} rows, but needs at least {n_keep} rows "
+                f"for horizon 0..{max_horizon}."
+            )
+        if ens.shape[0] < n_keep:
+            raise ValueError(
+                f"{gas} ensemble kernel in '{os.path.basename(path)}' has only "
+                f"{ens.shape[0]} rows, but needs at least {n_keep} rows "
+                f"for horizon 0..{max_horizon}."
+            )
+
+        if len(central) > n_keep or ens.shape[0] > n_keep:
+            print(
+                f"[dynamic_ghg_lcia] Truncating {gas} kernels from "
+                f"{len(central)} / {ens.shape[0]} rows to {n_keep} rows "
+                f"(index 0..{max_horizon}) from file '{os.path.basename(path)}'"
+            )
+
+        central = central[:n_keep]
+        ens = ens[:n_keep, :]
+
+        irfs[gas] = {
+            "central": central,
+            "ensemble": ens,
+        }
 
     return irfs
-
+    
 
 # -----------------------------------------------------------------------------
 # 3. BW2 flow metadata: gas/subtype/sign classification
@@ -390,14 +426,14 @@ def build_flow_info_mapping(flow_ids: Iterable[int]) -> Dict[int, FlowInfo]:
 
 
 # -----------------------------------------------------------------------------
-# 4. dp-LCIA computation (central + uncertainty) by category
+# 4. dp-LCIA computation (central + uncertainty) by category, adding H parameter
 # -----------------------------------------------------------------------------
-
 def compute_dynamic_lcia_by_category(
     elec_path: str,
     ghg_dir: str,
     metric: Metric = "rf",
-) -> Tuple[pd.DatetimeIndex, pd.DataFrame, pd.DataFrame, Dict[int, FlowInfo]]:
+    max_horizon: int = 100,
+    ): # -> Tuple[pd.DatetimeIndex, pd.DataFrame, pd.DataFrame, Dict[int, FlowInfo]]:
 
     # ---- 1. Read electricity inventory ----
     # Ensure read "flow" as str (converted before saving to excel) 
@@ -422,7 +458,7 @@ def compute_dynamic_lcia_by_category(
     # ---- 2. Scenario/year + GHG kernels ----
     scenario, year = parse_scenario_year_from_elec(elec_path)
     ghg_files = find_ghg_files(ghg_dir=ghg_dir, scenario=scenario, year=year)
-    irfs = load_ghg_kernels(ghg_files, metric=metric)
+    irfs = load_ghg_kernels(ghg_files, metric=metric, max_horizon=max_horizon)
 
     # ---- 3. Flow metadata ----
     flow_info = build_flow_info_mapping(flow_ids)
@@ -431,11 +467,18 @@ def compute_dynamic_lcia_by_category(
     first_year = int(pivot.index[0])
     last_year  = int(pivot.index[-1])
 
+    #eval_years = pd.date_range(
+    #    f"{first_year}-01-01",
+    #    f"{last_year + 100}-01-01",
+    #    freq="YS",
+    #)
+    # now with updated H parameter, do not hard-code H = 100 
     eval_years = pd.date_range(
         f"{first_year}-01-01",
-        f"{last_year + 100}-01-01",
+        f"{last_year + max_horizon}-01-01",
         freq="YS",
     )
+    
     n_eval = len(eval_years)
 
     # ---- 5. Dynamic convolution per subtype ----
@@ -648,6 +691,7 @@ def compute_dynamic_lcia_for_scenarios(
     elec_files: Dict[Tuple[str, int], str],
     ghg_dir: str,
     metric: Metric = "rf",
+    max_horizon: int = 100
 ):
     """
     Compute dynamic LCIA for multiple (SSP, Year) electricity files.
@@ -675,17 +719,16 @@ def compute_dynamic_lcia_for_scenarios(
     results = {}
 
     for (ssp, year), path in elec_files.items():
-        
         out = compute_dynamic_lcia_by_category(
             elec_path=path,
             ghg_dir=ghg_dir,
             metric=metric,
+            max_horizon=max_horizon,
         )
-
-        # out is now a dictionary
         results[(ssp, year)] = out
 
     return results
+
 
 
 
@@ -722,7 +765,9 @@ def plot_multi_scenario_bands(
     gas_to_plot: str = "CO2",
     subcat: str = "co2_total",
     title: str | None = None,
-    figsize=(12, 6)
+    figsize=(12, 6),
+    #save_path: str | None = None,
+    #dpi: int = 300,
 ):
     """
     Plot dpLCIA uncertainty bands (central + 5–95%) across multiple SSP/Year scenarios for a single GHG category.
@@ -846,10 +891,15 @@ def plot_multi_scenario_split_each_ghg_totalscore(
     ssp_color_map: dict = None,
     plot_uncertainty: bool = True,  
     figsize: tuple = (14, 8),
+    x_limit: int | None = None,
+    x_end_year: int | None = None,
+    left_pad_years: int = 5,  # with the new x_limit, to have some margin on the left side 
+    save_path: str | None = None,
+    dpi: int = 300,
+    
 ):
     """
     One combined dpLCIA plot comparing multiple SSP scenarios.
-
     DEFAULT behavior:
         Plot ONLY the four major totals:
             all_ghg, co2_total, ch4_total, n2o_total
@@ -932,20 +982,6 @@ def plot_multi_scenario_split_each_ghg_totalscore(
     plt.figure(figsize=figsize)
 
     # ===========================================================
-    # 6. Plot curves and uncertainty bands
-    # ===========================================================
-    #for gas_key, gas_label, style in gas_order:
-    #    for (ssp, year), out in results.items():
-    #        eval_years = out["eval_years"]
-    #        central = out["central"][gas_key]
-    #        lower = out["band"]["lower"][gas_key]
-    #        upper = out["band"]["upper"][gas_key]
-    #       color = ssp_color_map.get(ssp, "black")
-    #        plt.fill_between(eval_years, lower, upper, color=color, alpha=0.12)
-    #        plt.plot(eval_years, central, linestyle=style, linewidth=2, color=color)
-
-
-    # ===========================================================
     # 6a. Plot curves and (optional) uncertainty bands
     # ===========================================================
     for gas_key, gas_label, style in gas_order:
@@ -987,24 +1023,20 @@ def plot_multi_scenario_split_each_ghg_totalscore(
     if metric == "agwp": 
         ax = plt.gca()
         for (ssp, model_year), out in results.items():
-    
             central = out["central"]
             if not {"co2_total", "ch4_total"}.issubset(central.columns):
                 continue
     
             diff = central["co2_total"] - central["ch4_total"]
             crossover_mask = diff > 0
-    
             # no crossover within horizon
             if not crossover_mask.any():
                 continue
-    
+
             # first year where CO2 surpasses CH4
             t_cross = crossover_mask.idxmax()   # Timestamp
             cross_year = int(pd.Timestamp(t_cross).year)
-    
             color = ssp_color_map.get(ssp, "black")
-    
             # --- vertical line at crossover year ---
             ax.axvline(
                 x=t_cross,
@@ -1014,7 +1046,6 @@ def plot_multi_scenario_split_each_ghg_totalscore(
                 alpha=0.9,
                 zorder=0,
             )
-    
             # --- annotate the year near the top of the plot ---
             # place text using axis fraction for y so it stays visible regardless of scale
             ax.text(
@@ -1028,9 +1059,6 @@ def plot_multi_scenario_split_each_ghg_totalscore(
                 ha="right",
                 transform=ax.get_xaxis_transform(),  # x in data, y in axes fraction
             )
-
-
-
     
     # ===========================================================
     # 7. Legend 1 — SSP scenarios (top right)
@@ -1090,5 +1118,30 @@ def plot_multi_scenario_split_each_ghg_totalscore(
         fontsize=16,
     )
 
+
+    # new with the x-limit so no sudden drop of the impacts along x-axis    # apply x-range cutoff here
+    ax = plt.gca()
+    
+    sample_out = next(iter(results.values()))
+    first_plot_year = pd.Timestamp(sample_out["eval_years"][0]).year
+    
+    if x_limit is not None and x_end_year is not None:
+        raise ValueError("Use either x_limit or x_end_year, not both.")
+    
+    if x_limit is not None:
+        ax.set_xlim(
+            pd.Timestamp(f"{first_plot_year - left_pad_years}-01-01"),
+            pd.Timestamp(f"{first_plot_year + x_limit}-01-01"),
+        )
+    
+    if x_end_year is not None:
+        ax.set_xlim(
+            pd.Timestamp(f"{first_plot_year - left_pad_years}-01-01"),
+            pd.Timestamp(f"{x_end_year}-01-01"),
+        )
+    
     plt.tight_layout()
+    if save_path is not None:
+        plt.savefig(save_path, dpi=dpi, bbox_inches="tight")
+
     plt.show()
