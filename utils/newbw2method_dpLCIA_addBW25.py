@@ -328,7 +328,7 @@ class assign_dpGWP:
                 else:
                     raise ValueError(f"Unexpected number of years, only supported GWP20 or GWP100: {n_years}")
             
-            # caz now we adding GWP20 option, adding in a check only of the data len is 100, then write GWP100, 
+            # caz we adding GWP20 option, adding in a check only of the data len is 100, then write GWP100, 
             #elif self.GWP100_only == True and len(C["Methane, fossil"]) == 100:
             #    m_name = 'Climate Change' + ' prospective GWP100' 
             #    name = (m_name, ssp, MY, 'pGWP100 ' + gwp_method ) 

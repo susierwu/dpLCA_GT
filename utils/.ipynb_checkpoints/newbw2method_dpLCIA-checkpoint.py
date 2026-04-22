@@ -318,4 +318,28 @@ class assign_dpGWP:
             new_method.metadata["unit"] = 'kg CO2-Eq'
             new_method.write(data[i])
         print(f"finishing preparing new methods, method name : {name}")
-        
+
+
+
+
+    def prep_final_dCC_bw2method (self, data, gwp_method = None):
+        """ 
+        only data is needed for the bw2method, C is added to control the length of the GWP100 or 20
+        """ 
+        ssp, MY = str('SSP' + self.ssp) , str('MY' + str(self.fairMY))   
+        m_name = 'IPCC 2021 - dpCFs' + ssp + '_' + MY + ' - year'
+        print(f" start creating new method {ssp} {MY}, with {gwp_method} approach ")
+        for i in range( 0, len(data) ):  # pGWP only has one if self.GWP100_only == True, prepare for pGWP100
+            if self.GWP100_only != True:
+                name = (m_name + str(i) , 'climate change', 'dpGWP' + " " + gwp_method + str(i) )
+            elif self.GWP100_only == True:
+                m_name = "Climate Change prospective GWP100"
+                name = (m_name, ssp, MY, 'pGWP100 ' + gwp_method ) 
+            new_method = bw2data.Method(name)
+            new_method.register()
+            if 'fixed' in gwp_method: 
+                new_method.metadata["unit"] = 'kg CO2 2019eq'
+            else:
+                new_method.metadata["unit"] = f'kg CO2 {ssp}{MY}eq'
+            new_method.write(data[i])
+        print(f"finishing preparing new methods, method name : {name}")

@@ -122,6 +122,8 @@ class majorghg_get_f:
         tp_pulse_time = float(tp_axis_self[tp_pulse])
 
         # response starts at first timebound >= tp_pulse_time + dt
+        # so “response starting one timestep after the instant physical response” 
+        # but should be more precisely as:  tb_resp0 = _first_index_ge(tb_axis_self, tp_pulse_time - 1e-12)
         tb_resp0 = _first_index_ge(tb_axis_self, tp_pulse_time + dt - 1e-12)
 
         nH = self.H_max * self.ts_per_year + 1
@@ -302,7 +304,6 @@ class majorghg_get_f:
           - ONE baseline run
           - ONE perturbed run per gas (3 runs)
         Total: 4 runs instead of 6 (≈33% faster).
-
         Returns dict: {"CO2": irf, "CH4": irf, "N2O": irf}
         Also stores in self.co2_f/ch4_f/n2o_f like wrappers.
         """
@@ -315,6 +316,8 @@ class majorghg_get_f:
         tp_axis_self = _as_float_array(self.f.timepoints)
         tb_axis_self = _as_float_array(self.f.timebounds)
         tp_pulse_time = float(tp_axis_self[tp_pulse])
+        
+        #tb_resp0 = _first_index_ge(tb_axis_self, tp_pulse_time - 1e-12)
         tb_resp0 = _first_index_ge(tb_axis_self, tp_pulse_time + dt - 1e-12)
 
         nH = self.H_max * self.ts_per_year + 1
