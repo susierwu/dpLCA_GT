@@ -745,13 +745,13 @@ def _ssp_to_color(ssp_name: str):
     s = ssp_name.upper().replace(" ", "").replace("_", "").replace("-", "")
     # SSP1 family → SSP1-19 deep blue
     if s.startswith("SSP1"):
-        return "#006BA4"
+        return "#2c7bb6"
     # SSP2 family → SSP2-45 orange
     if s.startswith("SSP2"):
-        return "#FF800E"
+        return "#fdae61"
     # SSP5 family → SSP5-85 gray
     if s.startswith("SSP5"):
-        return "gray"
+        return "d7191c"
     # fallback — black (unknown SSP)
     return "black"
 
@@ -921,21 +921,22 @@ def plot_multi_scenario_split_each_ghg_totalscore(
     # ===========================================================
     # 2. Define label and style registry (for totals + subcats)
     # ===========================================================
+    
     style_registry = {
         # Totals
         "all_ghg": ("All GHGs", "-"),
-        "co2_total": ("CO₂ total", "-."), #--
-        "ch4_total": ("CH₄ total", ":"), #-.
-        "n2o_total": ("N₂O total", "--"),
-
+        "co2_total": (r"CO$_2$ total", "-."),
+        "ch4_total": (r"CH$_4$ total", ":"),
+        "n2o_total": (r"N$_2$O total", "--"),
+    
         # Subcategories
-        "co2_fossil_positive": ("CO₂ fossil", "--"),
-        "co2_biogenic": ("CO₂ biogenic", ":"),
-        "co2_other_negative": ("CO₂ negative tech", "-."),
-
-        "ch4_fossil": ("CH₄ fossil", "--"),
-        "ch4_non_fossil": ("CH₄ non-fossil", ":"),
-        "ch4_biomass": ("CH₄ biomass", "-."),
+        "co2_fossil_positive": (r"CO$_2$ fossil", "--"),
+        "co2_biogenic": (r"CO$_2$ biogenic", ":"),
+        "co2_other_negative": (r"CO$_2$ negative tech", "-."),
+    
+        "ch4_fossil": (r"CH$_4$ fossil", "--"),
+        "ch4_non_fossil": (r"CH$_4$ non-fossil", ":"),
+        "ch4_biomass": (r"CH$_4$ biomass", "-."),
     }
 
     # ===========================================================
@@ -962,10 +963,10 @@ def plot_multi_scenario_split_each_ghg_totalscore(
     # 4. Metric metadata
     # ===========================================================
     metric_map = {
-        "rf": ("instantaneous radiative forcing", "W m⁻² kg⁻¹"),
-        "agwp": ("AGWP (cumulative radiative forcing)", "W m⁻² yr kg⁻¹"),
-        "gwp": ("GWP100-equivalent weighting", "kg CO₂-eq / kg"),
-        "dcf": ("dynamic characterization factor", "a·kg⁻¹"),
+        "rf": ("instantaneous radiative forcing", r"W m$^{-2}$ kg$^{-1}$"),
+        "agwp": ("AGWP (cumulative radiative forcing)", r"W m$^{-2}$ yr kg$^{-1}$"),
+        "gwp": ("GWP100-equivalent weighting", r"kg CO$_2$-eq kg$^{-1}$"),
+        "dcf": ("dynamic characterization factor", r"a·kg$^{-1}$"),
     }
     metric_fullname, metric_unit = metric_map.get(metric.lower(), ("metric", ""))
 
@@ -974,9 +975,9 @@ def plot_multi_scenario_split_each_ghg_totalscore(
     # ===========================================================
     if ssp_color_map is None:
         ssp_color_map = {
-            "SSP1-19": "#006BA4",
-            "SSP2-45": "#FF800E",
-            "SSP5-85": "gray",
+            "SSP1-19": "#2c7bb6",
+            "SSP2-45": "#fdae61",
+            "SSP5-85": "#d7191c",
         }
 
     plt.figure(figsize=figsize)
@@ -1050,14 +1051,14 @@ def plot_multi_scenario_split_each_ghg_totalscore(
             # place text using axis fraction for y so it stays visible regardless of scale
             ax.text(
                 t_cross,
-                0.98,  # near top
-                f"{ssp}: CO₂ > CH₄ ({cross_year})",
+                0.98,
+                rf"{ssp}: CO$_2$ > CH$_4$ ({cross_year})",
                 color=color,
                 fontsize=10,
                 rotation=90,
                 va="top",
                 ha="right",
-                transform=ax.get_xaxis_transform(),  # x in data, y in axes fraction
+                transform=ax.get_xaxis_transform(),
             )
     
     # ===========================================================
@@ -1110,12 +1111,15 @@ def plot_multi_scenario_split_each_ghg_totalscore(
     # ===========================================================
     plt.grid(True)
     plt.xlabel("Year", fontsize=12)
-    plt.ylabel(f"{metric} [{metric_unit}]", fontsize=14)
+    plt.ylabel(f"{metric.upper()} [{metric_unit}]", fontsize=14)
+    
 
     #desc = ", ".join(gases_to_plot)
+
+    # for ms, no title 
     plt.title(
-        f"dpLCIA ({metric_fullname}) ", #— {desc}
-        fontsize=16,
+        f"{metric_fullname}", #— {desc}
+        fontsize=14,
     )
 
 
